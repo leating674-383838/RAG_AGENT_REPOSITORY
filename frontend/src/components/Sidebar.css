@@ -136,11 +136,14 @@
     position: absolute;
     top: 100%;
     right: 0;
-    z-index: 100;
+    z-index: 9999;
     width: 140px;
     padding: 4px;
     margin-top: 4px;
     border-radius: 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     animation: fadeIn 0.15s ease-out;
 }
 
@@ -338,8 +341,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    max-height: 300px;
-    overflow-y: auto;
+    /* Removed overflow-y to allow menus to float */
 }
 
 /* Custom Scrollbar */
@@ -482,18 +484,33 @@
 .project-relative-chats {
     display: flex;
     flex-direction: column;
-    margin-top: 2px;
+    margin-top: 4px;
+    border-left: 1px dashed var(--border-color);
+    margin-left: 20px;
+    padding-left: 0;
 }
 
 .relative-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     padding: 6px 12px;
+    margin-bottom: 2px;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
     color: var(--text-secondary);
+    position: relative;
+}
+
+.tree-leaf {
+    width: 14px;
+    height: 1px;
+    background: var(--border-color);
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    opacity: 0.5;
 }
 
 .relative-item:hover {
@@ -502,8 +519,23 @@
 }
 
 .rel-prefix {
-    opacity: 0.4;
-    color: var(--text-secondary);
+    display: none;
+    /* Replaced by icons and lines */
+}
+
+.tree-leaf {
+    width: 12px;
+    height: 12px;
+    border-left: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-right: 4px;
+    margin-top: -6px;
+    opacity: 0.5;
+}
+
+.rel-icon {
+    opacity: 0.6;
+    margin-right: 4px;
 }
 
 .project-group {
@@ -553,6 +585,7 @@
 .history-item:hover .move-action {
     opacity: 1;
 }
+
 
 .project-dropdown {
     position: absolute;

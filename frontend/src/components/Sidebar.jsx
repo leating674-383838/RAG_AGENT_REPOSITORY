@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus, MessageSquare, Moon, Sun, X,
-    FileSpreadsheet, Search, Folder, FolderPlus, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight
+    FileSpreadsheet, Search, Folder, FolderPlus, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight, FileText
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -206,9 +206,9 @@ const Sidebar = ({
                                                     key={s.id}
                                                     className={`history-item relative-item ${currentSession?.id === s.id ? 'active' : ''}`}
                                                     onClick={() => onSelectSession(s)}
-                                                    style={{ fontFamily: 'monospace', fontSize: '0.8rem', marginLeft: '20px' }}
                                                 >
-                                                    <span className="rel-prefix">./</span>
+                                                    <div className="tree-leaf"></div>
+                                                    <FileText size={12} className="rel-icon" />
                                                     <span className="history-item-title">{s.title || 'untitled'}</span>
                                                 </div>
                                             ))}

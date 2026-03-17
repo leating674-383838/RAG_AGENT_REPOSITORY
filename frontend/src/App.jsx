@@ -98,6 +98,12 @@ function App() {
         sessions={sessions}
         onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
         onNewSession={handleNewSession}
+        onSessionUpdate={(updatedSess) => {
+          setSessions(prev => prev.map(s => s.id === updatedSess.id ? updatedSess : s));
+          if (currentSession?.id === updatedSess.id) {
+            setCurrentSession(updatedSess);
+          }
+        }}
         theme={theme}
         toggleTheme={toggleTheme}
       />

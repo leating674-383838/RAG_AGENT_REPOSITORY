@@ -11,9 +11,15 @@ const SUGGESTIONS = [
 ];
 
 const ChatArea = ({
-    toggleSidebar, currentSession, currentProject, sessions,
-    onSelectSession, onNewSession,
-    theme, toggleTheme
+    toggleSidebar,
+    currentSession,
+    currentProject,
+    sessions,
+    onSelectSession,
+    onNewSession,
+    onSessionUpdate,
+    theme,
+    toggleTheme
 }) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
@@ -68,19 +74,27 @@ const ChatArea = ({
         if (!msgText.trim() || !currentSession?.id) return;
 
         const now = new Date().toISOString();
+        const isFirstMessageInSession = messages.length === 0; // Check before adding user message
         setMessages(prev => [...prev, { role: 'user', content: msgText, timestamp: now }]);
         setInput('');
         setIsTyping(true);
         setIsNewChat(false);
 
         try {
-            const resp = await sendChat(currentSession.id, msgText, useWebSearch, useRag);
+            const data = await sendChat(currentSession.id, msgText, useWebSearch, useRag);
             setMessages(prev => [...prev, {
                 role: 'ai',
-                content: resp.reply,
+                content: data.reply,
                 timestamp: new Date().toISOString(),
-                elapsedMs: resp.elapsed_ms
+                elapsedMs: data.elapsed_ms
             }]);
+
+            // If it's the first message, the session might have been renamed
+            if (isFirstMessageInSession && onSessionUpdate) {
+                const refreshedSessions = await fetchSessions();
+                const updated = refreshedSessions.find(s => s.id === currentSession.id);
+                if (updated) onSessionUpdate(updated);
+            }
         } catch (e) {
             setMessages(prev => [...prev, {
                 role: 'ai',

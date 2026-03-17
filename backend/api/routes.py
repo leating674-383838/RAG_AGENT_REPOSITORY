@@ -92,7 +92,7 @@ def chat(request: ChatRequest):
         storage.add_message(request.session_id, "assistant", ai_response)
         
         # 5. Auto-rename session if it's the first message
-        if len(history) == 0:
+        if len(history) == 1:
             title = AgentService.summarize_title(request.message)
             if storage.supabase:
                  storage.supabase.table("sessions").update({"title": title}).eq("id", request.session_id).execute()
