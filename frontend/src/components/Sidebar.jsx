@@ -10,8 +10,6 @@ const Sidebar = ({
     sessions, currentSession, onSelectSession, onNewSession,
     projects, onNewProject, onSelectProject, currentProject
 }) => {
-    const fileInputRef = useRef(null);
-    const [uploading, setUploading] = useState(false);
     const [showMore, setShowMore] = useState(false);
     const [expandedProjects, setExpandedProjects] = useState({});
     const [showSearch, setShowSearch] = useState(false);
@@ -30,7 +28,6 @@ const Sidebar = ({
         }
     }, [currentSession]);
 
-    const handleUploadClick = () => fileInputRef.current?.click();
 
     const handleMoveSession = async (sessionId, projectId) => {
         try {
@@ -54,21 +51,6 @@ const Sidebar = ({
         }
     };
 
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setUploading(true);
-        try {
-            const client = await import('../api/client');
-            await client.uploadFile(file);
-            alert(`上传成功: ${file.name}`);
-        } catch (error) {
-            alert(`上传失败: ${file.name}`);
-        } finally {
-            setUploading(false);
-            e.target.value = null;
-        }
-    };
 
     const toggleProject = (projectId) => {
         setExpandedProjects(prev => ({
@@ -254,19 +236,6 @@ const Sidebar = ({
                     </div>
                 </div>
 
-                <div className="sidebar-footer">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        accept=".xlsx,.pdf,.docx,.doc"
-                        onChange={handleFileChange}
-                    />
-                    <button className="footer-btn" onClick={handleUploadClick} disabled={uploading}>
-                        <Plus size={18} />
-                        <span>{uploading ? '上传中...' : '上传新文件'}</span>
-                    </button>
-                </div>
             </aside>
 
             {/* Deletion confirmation modal */}

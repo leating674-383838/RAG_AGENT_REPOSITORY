@@ -542,32 +542,6 @@
     margin-bottom: 8px;
 }
 
-.sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.footer-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    border: none;
-    background: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    width: 100%;
-}
-
-.footer-btn:hover {
-    background: var(--border-color);
-    color: var(--text-primary);
-}
 
 .history-item {
     position: relative;

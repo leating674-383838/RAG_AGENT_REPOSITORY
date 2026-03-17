@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw } from 'lucide-react';
-import { fetchMessages, sendChat, clearMessages, submitFeedback } from '../api/client';
+import { fetchMessages, sendChat, clearMessages, submitFeedback, uploadFile, fetchSessions } from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import './ChatArea.css';
 
@@ -31,6 +31,8 @@ const ChatArea = ({
     const [copiedIdx, setCopiedIdx] = useState(null);
     const endRef = useRef(null);
     const inputRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         if (currentSession) {
@@ -143,6 +145,28 @@ const ChatArea = ({
         const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
         if (lastUserMsg) {
             handleSend(null, lastUserMsg.content);
+        }
+    };
+
+    const handleUploadClick = () => fileInputRef.current?.click();
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            await uploadFile(file);
+            // Optionally add a system message or notification
+            setMessages(prev => [...prev, {
+                role: 'ai',
+                content: `✅ 文件已成功上传并处理: **${file.name}**。您现在可以针对该文件内容进行提问。`,
+                timestamp: new Date().toISOString()
+            }]);
+        } catch (error) {
+            alert(`上传失败: ${file.name}`);
+        } finally {
+            setUploading(false);
+            e.target.value = null;
         }
     };
 
@@ -305,6 +329,22 @@ const ChatArea = ({
 
             <div className="input-area">
                 <form onSubmit={handleSend} className="input-form">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        accept=".xlsx,.pdf,.docx,.doc"
+                        onChange={handleFileChange}
+                    />
+                    <button
+                        type="button"
+                        className={`upload-btn ${uploading ? 'uploading' : ''}`}
+                        onClick={handleUploadClick}
+                        disabled={uploading || !currentSession}
+                        title="上传文件"
+                    >
+                        {uploading ? <Loader2 className="spinner" size={20} /> : <Plus size={20} />}
+                    </button>
                     <input
                         type="text"
                         ref={inputRef}

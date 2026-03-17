@@ -179,10 +179,38 @@
     flex: 1;
     border: none;
     background: none;
-    padding: 8px 16px;
+    padding: 8px 12px;
     font-size: 1rem;
     color: var(--text-primary);
     outline: none;
+}
+
+.upload-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.upload-btn:hover:not(:disabled) {
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent-color);
+}
+
+.upload-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-btn.uploading {
+    color: var(--accent-color);
 }
 
 .chat-input::placeholder {
