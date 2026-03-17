@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus, MessageSquare, Moon, Sun, X,
-    FileSpreadsheet, Search, Folder, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight
+    FileSpreadsheet, Search, Folder, FolderPlus, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -98,11 +98,15 @@ const Sidebar = ({
 
     const renderChatMenu = (s) => (
         <div className="session-options-menu glass" onClick={e => e.stopPropagation()}>
-            <div className="menu-item delete" onClick={() => { setDeleteConfirmId(s.id); setActiveMenuId(null); }}>
-                <Trash2 size={14} />
-                <span>删除对话</span>
-            </div>
-            <div className="menu-divider"></div>
+            {sessions.length > 1 && (
+                <>
+                    <div className="menu-item delete" onClick={() => { setDeleteConfirmId(s.id); setActiveMenuId(null); }}>
+                        <Trash2 size={14} />
+                        <span>删除对话</span>
+                    </div>
+                    <div className="menu-divider"></div>
+                </>
+            )}
             <div className="menu-label">移动至项目:</div>
             {projects.map(p => (
                 <div key={p.id} className="menu-item" onClick={() => handleMoveSession(s.id, p.id)}>
@@ -174,43 +178,21 @@ const Sidebar = ({
                     {/* My Projects Section */}
                     <div className="projects-section">
                         <div className="projects-section-header">
-                            <span>我的项目</span>
-                            <Plus size={16} className="add-project-btn" onClick={onNewProject} />
+                            <span>项目</span>
                         </div>
                         <div className="project-list">
+                            <div className="nav-item new-project-nav" onClick={onNewProject}>
+                                <FolderPlus size={18} />
+                                <span>新项目</span>
+                            </div>
                             {projects && projects.length > 0 ? projects.map(project => (
-                                <div key={project.id} className="project-item">
-                                    <div className="project-folder" onClick={() => toggleProject(project.id)}>
-                                        {expandedProjects[project.id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                                        <Folder size={16} />
-                                        <span>{project.name}</span>
-                                    </div>
-                                    {expandedProjects[project.id] && (
-                                        <div className="project-chats">
-                                            {sessions.filter(s => s.project_id === project.id).map(s => (
-                                                <div
-                                                    key={s.id}
-                                                    className={`history-item ${currentSession?.id === s.id ? 'active' : ''}`}
-                                                    onClick={() => onSelectSession(s)}
-                                                >
-                                                    <div className="history-item-content">
-                                                        <span className="history-item-title">{s.title || '无标题'}</span>
-                                                        <div className="history-item-snippet">
-                                                            <span className="snippet-text">{getSnippet(s.title)}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="item-options" onClick={(e) => toggleMenu(e, s.id)}>
-                                                        <MoreHorizontal size={14} />
-                                                        {activeMenuId === s.id && renderChatMenu(s)}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            <div className="nav-item new-chat-in-project" onClick={() => onNewSession(project.id)}>
-                                                <Plus size={14} />
-                                                <span>开始新对话</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                <div
+                                    key={project.id}
+                                    className={`project-folder ${currentProject?.id === project.id ? 'active' : ''}`}
+                                    onClick={() => onSelectProject(project)}
+                                >
+                                    <Folder size={16} />
+                                    <span>{project.name}</span>
                                 </div>
                             )) : (
                                 <p className="empty-hint">暂无项目</p>

@@ -10,7 +10,11 @@ const SUGGESTIONS = [
     { icon: <Zap size={18} className="suggestion-icon zap" />, text: 'React 和 Vue 的主要区别是什么' },
 ];
 
-const ChatArea = ({ toggleSidebar, currentSession, theme, toggleTheme }) => {
+const ChatArea = ({
+    toggleSidebar, currentSession, currentProject, sessions,
+    onSelectSession, onNewSession,
+    theme, toggleTheme
+}) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
@@ -160,7 +164,39 @@ const ChatArea = ({ toggleSidebar, currentSession, theme, toggleTheme }) => {
                 </div>
             </header>
 
-            {isNewChat && !isTyping ? (
+            {currentProject && !currentSession ? (
+                <div className="project-overview">
+                    <div className="project-title-section">
+                        <Folder size={48} className="project-title-icon" />
+                        <h2 className="project-title-text">{currentProject.name}</h2>
+                    </div>
+
+                    <div className="project-input-bar glass" onClick={() => onNewSession(currentProject.id)}>
+                        <Plus size={20} className="plus-icon" />
+                        <span>{currentProject.name} 中的新聊天</span>
+                    </div>
+
+                    <div className="project-tabs">
+                        <button className="p-tab active">聊天</button>
+                        <button className="p-tab">来源</button>
+                    </div>
+
+                    <div className="project-session-list">
+                        {(sessions || []).filter(s => s.project_id === currentProject.id).length > 0 ? (
+                            (sessions || []).filter(s => s.project_id === currentProject.id).map(s => (
+                                <div key={s.id} className="project-session-item glass" onClick={() => onSelectSession(s)}>
+                                    <div className="ps-title">{s.title || '无标题'}</div>
+                                    <div className="ps-date">
+                                        {s.created_at ? new Date(s.created_at).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' }) : ''}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="no-project-chats">该项目暂无对话</p>
+                        )}
+                    </div>
+                </div>
+            ) : isNewChat && !isTyping ? (
                 <div className="welcome-screen">
                     <div className="welcome-icon">
                         <Bot size={48} />

@@ -11,7 +11,7 @@ function App() {
   const [currentSession, setCurrentSession] = useState(null);
   const [currentProject, setCurrentProject] = useState(null);
 
-  console.log("App Projects State:", projects);
+
 
   useEffect(() => {
     // 1. Initial theme from system preference or default 'light'
@@ -86,14 +86,18 @@ function App() {
         projects={projects}
         currentSession={currentSession}
         currentProject={currentProject}
-        onSelectSession={setCurrentSession}
+        onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
         onNewSession={handleNewSession}
         onNewProject={handleNewProject}
-        onSelectProject={setCurrentProject}
+        onSelectProject={(p) => { setCurrentProject(p); setCurrentSession(null); }}
       />
       <ChatArea
         toggleSidebar={toggleSidebar}
         currentSession={currentSession}
+        currentProject={currentProject}
+        sessions={sessions}
+        onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
+        onNewSession={handleNewSession}
         theme={theme}
         toggleTheme={toggleTheme}
       />
