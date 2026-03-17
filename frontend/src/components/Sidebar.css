@@ -419,11 +419,11 @@
     margin-bottom: 8px;
 }
 
-.projects-section-header span {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #999;
-    text-transform: uppercase;
+.projects-section-header span.root-path {
+    font-size: 0.8rem;
+    font-family: monospace;
+    color: var(--accent-color);
+    opacity: 0.8;
 }
 
 .add-project-btn {
@@ -447,6 +447,8 @@
     font-size: 0.9rem;
     color: var(--text-primary);
     transition: all 0.2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .project-folder:hover {
@@ -459,18 +461,53 @@
     font-weight: 500;
 }
 
+.project-path {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.project-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--accent-color);
+}
+
 .new-project-nav {
     color: var(--text-primary) !important;
     font-weight: 500;
 }
 
-.project-chats {
-    margin-left: 20px;
-    border-left: 1px solid var(--border-color);
-    padding-left: 8px;
+.project-relative-chats {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    margin-top: 2px;
+}
+
+.relative-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+}
+
+.relative-item:hover {
+    background: rgba(var(--accent-rgb), 0.05);
+    color: var(--text-primary);
+}
+
+.rel-prefix {
+    opacity: 0.4;
+    color: var(--text-secondary);
+}
+
+.project-group {
+    margin-bottom: 8px;
 }
 
 .sidebar-footer {

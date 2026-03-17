@@ -18,6 +18,7 @@ const Sidebar = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+    const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
 
     // Auto-expand current session's project
     useEffect(() => {
@@ -177,27 +178,47 @@ const Sidebar = ({
                 <div className="sidebar-content">
                     {/* My Projects Section */}
                     <div className="projects-section">
-                        <div className="projects-section-header">
-                            <span>项目</span>
-                        </div>
-                        <div className="project-list">
-                            <div className="nav-item new-project-nav" onClick={onNewProject}>
-                                <FolderPlus size={18} />
-                                <span>新项目</span>
+                        <div className="projects-section-header" onClick={() => setIsProjectsExpanded(!isProjectsExpanded)} style={{ cursor: 'pointer' }}>
+                            <div className="flex items-center gap-1">
+                                {isProjectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                <span className="root-path">/root/projects/</span>
                             </div>
-                            {projects && projects.length > 0 ? projects.map(project => (
-                                <div
-                                    key={project.id}
-                                    className={`project-folder ${currentProject?.id === project.id ? 'active' : ''}`}
-                                    onClick={() => onSelectProject(project)}
-                                >
-                                    <Folder size={16} />
-                                    <span>{project.name}</span>
-                                </div>
-                            )) : (
-                                <p className="empty-hint">暂无项目</p>
-                            )}
                         </div>
+                        {isProjectsExpanded && (
+                            <div className="project-list">
+                                <div className="nav-item new-project-nav" onClick={onNewProject} style={{ fontFamily: 'monospace' }}>
+                                    <FolderPlus size={18} />
+                                    <span>$ create_new_project</span>
+                                </div>
+                                {projects && projects.length > 0 ? projects.map(project => (
+                                    <div key={project.id} className="project-group">
+                                        <div
+                                            className={`project-folder ${currentProject?.id === project.id ? 'active' : ''}`}
+                                            onClick={() => onSelectProject(project)}
+                                            style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                                        >
+                                            <span className="project-path">~/projects/</span>
+                                            <span className="project-name">{project.name}</span>
+                                        </div>
+                                        <div className="project-relative-chats">
+                                            {sessions.filter(s => s.project_id === project.id).map(s => (
+                                                <div
+                                                    key={s.id}
+                                                    className={`history-item relative-item ${currentSession?.id === s.id ? 'active' : ''}`}
+                                                    onClick={() => onSelectSession(s)}
+                                                    style={{ fontFamily: 'monospace', fontSize: '0.8rem', marginLeft: '20px' }}
+                                                >
+                                                    <span className="rel-prefix">./</span>
+                                                    <span className="history-item-title">{s.title || 'untitled'}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <p className="empty-hint">暂无项目</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="chats-section">

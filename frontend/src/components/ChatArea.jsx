@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun } from 'lucide-react';
+import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw } from 'lucide-react';
 import { fetchMessages, sendChat, clearMessages, submitFeedback } from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import './ChatArea.css';
@@ -123,6 +123,15 @@ const ChatArea = ({
         setTimeout(() => setCopiedIdx(null), 2000);
     };
 
+    const handleRegenerate = async () => {
+        if (!currentSession?.id || isTyping) return;
+        // Find last user message
+        const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+        if (lastUserMsg) {
+            handleSend(null, lastUserMsg.content);
+        }
+    };
+
     const formatTime = (ts) => {
         if (!ts) return '';
         return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -220,15 +229,6 @@ const ChatArea = ({
                                 <div className="message-content">
                                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                                 </div>
-                                {msg.role === 'ai' && (
-                                    <button
-                                        className="copy-msg-btn"
-                                        onClick={() => handleCopy(msg.content, idx)}
-                                        title="复制内容"
-                                    >
-                                        {copiedIdx === idx ? <Check size={14} /> : <Copy size={14} />}
-                                    </button>
-                                )}
                             </div>
                             <div className="message-meta">
                                 <span className="msg-time">
@@ -238,27 +238,43 @@ const ChatArea = ({
                                 {msg.elapsedMs && (
                                     <span className="msg-elapsed">耗时 {(msg.elapsedMs / 1000).toFixed(1)}s</span>
                                 )}
-                                {msg.role === 'ai' && (
-                                    <span className="feedback-btns">
-                                        <button
-                                            className={`fb-btn ${feedbackGiven[idx] === 'useful' ? 'active-up' : ''}`}
-                                            onClick={() => handleFeedback(idx, 'useful')}
-                                            disabled={!!feedbackGiven[idx]}
-                                            title="有用"
-                                        >
-                                            <ThumbsUp size={14} />
-                                        </button>
-                                        <button
-                                            className={`fb-btn ${feedbackGiven[idx] === 'not_useful' ? 'active-down' : ''}`}
-                                            onClick={() => handleFeedback(idx, 'not_useful')}
-                                            disabled={!!feedbackGiven[idx]}
-                                            title="无用"
-                                        >
-                                            <ThumbsDown size={14} />
-                                        </button>
-                                    </span>
-                                )}
                             </div>
+                            {msg.role === 'ai' && (
+                                <div className="message-actions-bar">
+                                    <button
+                                        className="action-btn"
+                                        onClick={() => handleCopy(msg.content, idx)}
+                                        title="复制内容"
+                                    >
+                                        {copiedIdx === idx ? <Check size={14} /> : <Copy size={14} />}
+                                    </button>
+                                    <button
+                                        className={`action-btn ${feedbackGiven[idx] === 'useful' ? 'active-up' : ''}`}
+                                        onClick={() => handleFeedback(idx, 'useful')}
+                                        disabled={!!feedbackGiven[idx]}
+                                        title="赞"
+                                    >
+                                        <ThumbsUp size={14} />
+                                    </button>
+                                    <button
+                                        className={`action-btn ${feedbackGiven[idx] === 'not_useful' ? 'active-down' : ''}`}
+                                        onClick={() => handleFeedback(idx, 'not_useful')}
+                                        disabled={!!feedbackGiven[idx]}
+                                        title="踩"
+                                    >
+                                        <ThumbsDown size={14} />
+                                    </button>
+                                    {idx === messages.length - 1 && !isTyping && (
+                                        <button
+                                            className="action-btn"
+                                            onClick={handleRegenerate}
+                                            title="重新生成"
+                                        >
+                                            <RefreshCcw size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                     {isTyping && (
