@@ -37,5 +37,12 @@ export const moveSession = (sessionId, projectId) =>
 export const clearMessages = (sessionId) =>
     api.delete(`/sessions/${sessionId}/messages`).then(res => res.data);
 
-export const submitFeedback = (sessionId, messageContent, rating, comment = null) =>
-    api.post('/feedback', { session_id: sessionId, message_content: messageContent, rating, comment }).then(res => res.data);
+export const submitFeedback = async (sessionId, content, rating, comment = "") => {
+    const resp = await api.post('/feedback', { session_id: sessionId, message_content: content, rating, comment });
+    return resp.data;
+};
+
+export const deleteSession = async (sessionId) => {
+    const resp = await api.delete(`/sessions/${sessionId}`);
+    return resp.data;
+};

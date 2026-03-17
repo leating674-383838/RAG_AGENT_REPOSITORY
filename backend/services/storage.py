@@ -84,6 +84,11 @@ class StorageService:
         }).execute()
         return data.data[0] if data.data else None
 
+    async def delete_session(self, session_id: str):
+        # Cascading delete is handled by DB if configured, but let's be explicit if needed
+        # Actually in Supabase/Postgres, if foreign keys have ON DELETE CASCADE, deleting session is enough.
+        self.supabase.table("sessions").delete().eq("id", session_id).execute()
+
     def add_message(self, session_id: str, role: str, content: str):
         if not self.supabase:
             return None

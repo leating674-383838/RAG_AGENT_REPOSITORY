@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus, MessageSquare, Moon, Sun, X,
-    FileSpreadsheet, Search, Folder, MoreHorizontal, ChevronRight, ChevronDown
+    FileSpreadsheet, Search, Folder, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -10,16 +10,17 @@ const Sidebar = ({
     sessions, currentSession, onSelectSession, onNewSession,
     projects, onNewProject, onSelectProject, currentProject
 }) => {
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
     const [showMore, setShowMore] = useState(false);
     const [expandedProjects, setExpandedProjects] = useState({});
-    const [movingSessionId, setMovingSessionId] = useState(null);
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeMenuId, setActiveMenuId] = useState(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
     // Auto-expand current session's project
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentSession?.project_id) {
             setExpandedProjects(prev => ({
                 ...prev,
@@ -32,11 +33,23 @@ const Sidebar = ({
 
     const handleMoveSession = async (sessionId, projectId) => {
         try {
-            const { moveSession } = await import('../api/client');
-            await moveSession(sessionId, projectId);
-            window.location.reload();
+            const client = await import('../api/client');
+            await client.moveSession(sessionId, projectId);
+            setActiveMenuId(null);
+            window.location.reload(); // Temporary measure; ideal would be state sync
         } catch (e) {
             alert("移动会话失败");
+        }
+    };
+
+    const handleDeleteSession = async (sessionId) => {
+        try {
+            const client = await import('../api/client');
+            await client.deleteSession(sessionId);
+            setDeleteConfirmId(null);
+            window.location.reload(); // Temporary measure; ideal would be state sync
+        } catch (e) {
+            alert("删除失败");
         }
     };
 
@@ -45,8 +58,8 @@ const Sidebar = ({
         if (!file) return;
         setUploading(true);
         try {
-            const { uploadFile } = await import('../api/client');
-            await uploadFile(file);
+            const client = await import('../api/client');
+            await client.uploadFile(file);
             alert(`上传成功: ${file.name}`);
         } catch (error) {
             alert(`上传失败: ${file.name}`);
@@ -63,9 +76,14 @@ const Sidebar = ({
         }));
     };
 
+    const toggleMenu = (e, id) => {
+        e.stopPropagation();
+        setActiveMenuId(activeMenuId === id ? null : id);
+    };
+
     // Filter sessions not in any project for "Your Chats"
     const generalSessions = sessions.filter(s => !s.project_id);
-    const displayedSessions = showMore ? generalSessions.slice(0, 5) : generalSessions.slice(0, 3);
+    const displayedSessions = showMore ? generalSessions : generalSessions.slice(0, 5);
 
     // Search results
     const searchResults = searchQuery.trim()
@@ -83,11 +101,28 @@ const Sidebar = ({
         return title.length > 20 ? title.substring(0, 20) : title;
     };
 
+    const renderChatMenu = (s) => (
+        <div className="session-options-menu glass" onClick={e => e.stopPropagation()}>
+            <div className="menu-item delete" onClick={() => { setDeleteConfirmId(s.id); setActiveMenuId(null); }}>
+                <Trash2 size={14} />
+                <span>删除对话</span>
+            </div>
+            <div className="menu-divider"></div>
+            <div className="menu-label">移动至项目:</div>
+            {projects.map(p => (
+                <div key={p.id} className="menu-item" onClick={() => handleMoveSession(s.id, p.id)}>
+                    <ArrowRight size={14} />
+                    <span>{p.name}</span>
+                </div>
+            ))}
+        </div>
+    );
+
     return (
         <>
             <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
-                    <h2>QA Assistant</h2>
+                    <h2>智能助手</h2>
                     <button className="mobile-close" onClick={closeSidebar}>
                         <X size={20} />
                     </button>
@@ -98,17 +133,9 @@ const Sidebar = ({
                         <Plus size={18} />
                         <span>新聊天</span>
                     </div>
-                    <div className="nav-item ${showSearch ? 'active' : ''}" onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }}>
+                    <div className={`nav-item ${showSearch ? 'active' : ''}`} onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }}>
                         <Search size={18} />
                         <span>搜索聊天</span>
-                    </div>
-                    <div className="nav-item">
-                        <Folder size={18} />
-                        <span>我的项目</span>
-                    </div>
-                    <div className="nav-item ${!showSearch && !currentSession?.project_id ? 'active' : ''}">
-                        <MessageSquare size={18} />
-                        <span>你的聊天</span>
                     </div>
                 </div>
 
@@ -149,7 +176,6 @@ const Sidebar = ({
 
                 <div className="section-divider"></div>
 
-
                 <div className="sidebar-content">
                     {/* My Projects Section */}
                     <div className="projects-section">
@@ -158,7 +184,7 @@ const Sidebar = ({
                             <Plus size={16} className="add-project-btn" onClick={onNewProject} />
                         </div>
                         <div className="project-list">
-                            {projects.map(project => (
+                            {projects && projects.length > 0 ? projects.map(project => (
                                 <div key={project.id} className="project-item">
                                     <div className="project-folder" onClick={() => toggleProject(project.id)}>
                                         {expandedProjects[project.id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -180,23 +206,31 @@ const Sidebar = ({
                                                             <span className="snippet-time">{formatTime(s.created_at)}</span>
                                                         </div>
                                                     </div>
+                                                    <div className="item-options" onClick={(e) => toggleMenu(e, s.id)}>
+                                                        <MoreHorizontal size={14} />
+                                                        {activeMenuId === s.id && renderChatMenu(s)}
+                                                    </div>
                                                 </div>
                                             ))}
-                                            <div className="nav-item" style={{ padding: '4px 12px', fontSize: '0.8rem' }} onClick={() => onNewSession(project.id)}>
+                                            <div className="nav-item new-chat-in-project" onClick={() => onNewSession(project.id)}>
                                                 <Plus size={14} />
                                                 <span>开始新对话</span>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            )) : (
+                                <p className="empty-hint">暂无项目</p>
+                            )}
                         </div>
                     </div>
 
                     <div className="chats-section">
                         <div className="chats-section-header">
                             <span>你的聊天</span>
-                            <MoreHorizontal size={16} className="more-icon" onClick={() => setShowMore(!showMore)} />
+                            {generalSessions.length > 5 && (
+                                <MoreHorizontal size={16} className="more-icon" onClick={() => setShowMore(!showMore)} />
+                            )}
                         </div>
                         <div className="chat-list">
                             {displayedSessions.map(s => (
@@ -212,26 +246,10 @@ const Sidebar = ({
                                             <span className="snippet-time">{formatTime(s.created_at)}</span>
                                         </div>
                                     </div>
-                                    <div className="move-action" title="移动到项目" onClick={(e) => {
-                                        e.stopPropagation();
-                                        setMovingSessionId(movingSessionId === s.id ? null : s.id);
-                                    }}>
-                                        <Folder size={14} />
+                                    <div className="item-options" onClick={(e) => toggleMenu(e, s.id)}>
+                                        <MoreHorizontal size={14} />
+                                        {activeMenuId === s.id && renderChatMenu(s)}
                                     </div>
-                                    {movingSessionId === s.id && (
-                                        <div className="project-dropdown glass" onClick={(e) => e.stopPropagation()}>
-                                            <p className="dropdown-label">移动至:</p>
-                                            {projects.map(p => (
-                                                <div
-                                                    key={p.id}
-                                                    className="dropdown-item"
-                                                    onClick={() => handleMoveSession(s.id, p.id)}
-                                                >
-                                                    {p.name}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>
@@ -247,15 +265,28 @@ const Sidebar = ({
                         onChange={handleFileChange}
                     />
                     <button className="footer-btn" onClick={handleUploadClick} disabled={uploading}>
-                        <FileSpreadsheet size={18} />
-                        <span>{uploading ? '正在上传...' : '上传文件'}</span>
+                        <Plus size={18} />
+                        <span>{uploading ? '上传中...' : '上传新文件'}</span>
                     </button>
-                    <button className="footer-btn" onClick={toggleTheme}>
+                    <button className="theme-toggle" onClick={toggleTheme}>
                         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                        <span>{theme === 'dark' ? '浅色模式' : '深色模式'}</span>
                     </button>
                 </div>
             </aside>
+
+            {/* Deletion confirmation modal */}
+            {deleteConfirmId && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
+                    <div className="confirm-modal glass" onClick={e => e.stopPropagation()}>
+                        <h3>是否要删除该对话？</h3>
+                        <p>删除后将无法找回！</p>
+                        <div className="modal-actions">
+                            <button className="confirm-btn" onClick={() => handleDeleteSession(deleteConfirmId)}>是的</button>
+                            <button className="cancel-btn" onClick={() => setDeleteConfirmId(null)}>不用了</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className={`sidebar-overlay ${isOpen ? 'block' : 'hidden'}`} onClick={closeSidebar}></div>
         </>
     );

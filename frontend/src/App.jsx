@@ -11,6 +11,8 @@ function App() {
   const [currentSession, setCurrentSession] = useState(null);
   const [currentProject, setCurrentProject] = useState(null);
 
+  console.log("App Projects State:", projects);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -57,6 +59,7 @@ function App() {
     try {
       const newProj = await createProject(name);
       if (newProj) {
+        console.log("New Project Created:", newProj);
         setProjects(prev => [newProj, ...prev]);
       }
     } catch (e) {

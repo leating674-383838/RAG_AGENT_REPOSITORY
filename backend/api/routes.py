@@ -114,6 +114,11 @@ def clear_messages(session_id: str):
     return {"success": storage.clear_messages(session_id)}
 
 @router.post("/feedback")
-def submit_feedback(fb: FeedbackRequest):
-    result = storage.save_feedback(fb.session_id, fb.message_content, fb.rating, fb.comment)
-    return {"success": result is not None}
+async def post_feedback(request: FeedbackRequest):
+    await storage.save_feedback(request.session_id, request.message_content, request.rating, request.comment)
+    return {"status": "ok"}
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(session_id: str):
+    await storage.delete_session(session_id)
+    return {"status": "ok"}

@@ -237,7 +237,7 @@ const ChatArea = ({ toggleSidebar, currentSession }) => {
                 </div>
             )}
 
-            <div className="input-area glass">
+            <div className="input-area">
                 <form onSubmit={handleSend} className="input-form">
                     <input
                         type="text"

@@ -31,22 +31,45 @@
 
 .web-search-toggle {
     background: none;
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-secondary);
+    padding: 8px;
+    cursor: pointer;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     transition: all 0.2s;
+    box-shadow: none !important;
+}
+
+.web-search-toggle:hover {
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--text-primary);
 }
 
 .web-search-toggle.active {
     background-color: var(--accent-color);
     color: white;
-    border-color: var(--accent-color);
+}
+
+.clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: none !important;
+}
+
+.clear-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
 }
 
 .messages-container {
@@ -144,10 +167,11 @@
 }
 
 .input-area {
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
+    padding: 20px 40px;
+    background: transparent;
     position: sticky;
     bottom: 0;
+    border: none;
 }
 
 .input-form {
