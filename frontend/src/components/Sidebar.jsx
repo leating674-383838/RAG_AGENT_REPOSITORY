@@ -6,7 +6,7 @@ import {
 import './Sidebar.css';
 
 const Sidebar = ({
-    isOpen, closeSidebar, toggleTheme, theme,
+    isOpen, closeSidebar,
     sessions, currentSession, onSelectSession, onNewSession,
     projects, onNewProject, onSelectProject, currentProject
 }) => {
@@ -90,11 +90,6 @@ const Sidebar = ({
         ? sessions.filter(s => (s.title || '').toLowerCase().includes(searchQuery.toLowerCase()))
         : [];
 
-    const formatTime = (dateStr) => {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
 
     const getSnippet = (title) => {
         if (!title) return '无内容';
@@ -165,7 +160,6 @@ const Sidebar = ({
                                         <span className="history-item-title">{s.title || '无标题'}</span>
                                         <div className="history-item-snippet">
                                             <span className="snippet-text">{getSnippet(s.title)}</span>
-                                            <span className="snippet-time">{formatTime(s.created_at)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -203,7 +197,6 @@ const Sidebar = ({
                                                         <span className="history-item-title">{s.title || '无标题'}</span>
                                                         <div className="history-item-snippet">
                                                             <span className="snippet-text">{getSnippet(s.title)}</span>
-                                                            <span className="snippet-time">{formatTime(s.created_at)}</span>
                                                         </div>
                                                     </div>
                                                     <div className="item-options" onClick={(e) => toggleMenu(e, s.id)}>
@@ -228,9 +221,6 @@ const Sidebar = ({
                     <div className="chats-section">
                         <div className="chats-section-header">
                             <span>你的聊天</span>
-                            {generalSessions.length > 5 && (
-                                <MoreHorizontal size={16} className="more-icon" onClick={() => setShowMore(!showMore)} />
-                            )}
                         </div>
                         <div className="chat-list">
                             {displayedSessions.map(s => (
@@ -243,7 +233,6 @@ const Sidebar = ({
                                         <span className="history-item-title">{s.title || '无标题'}</span>
                                         <div className="history-item-snippet">
                                             <span className="snippet-text">{getSnippet(s.title)}</span>
-                                            <span className="snippet-time">{formatTime(s.created_at)}</span>
                                         </div>
                                     </div>
                                     <div className="item-options" onClick={(e) => toggleMenu(e, s.id)}>
@@ -252,6 +241,12 @@ const Sidebar = ({
                                     </div>
                                 </div>
                             ))}
+                            {generalSessions.length > 5 && (
+                                <div className="load-more-items" onClick={() => setShowMore(!showMore)}>
+                                    <MoreHorizontal size={16} className="more-icon" />
+                                    <span>{showMore ? '收起' : '展示更多'}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -267,9 +262,6 @@ const Sidebar = ({
                     <button className="footer-btn" onClick={handleUploadClick} disabled={uploading}>
                         <Plus size={18} />
                         <span>{uploading ? '上传中...' : '上传新文件'}</span>
-                    </button>
-                    <button className="theme-toggle" onClick={toggleTheme}>
-                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 </div>
             </aside>

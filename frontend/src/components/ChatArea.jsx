@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check } from 'lucide-react';
+import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun } from 'lucide-react';
 import { fetchMessages, sendChat, clearMessages, submitFeedback } from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import './ChatArea.css';
@@ -10,7 +10,7 @@ const SUGGESTIONS = [
     { icon: <Zap size={18} className="suggestion-icon zap" />, text: 'React 和 Vue 的主要区别是什么' },
 ];
 
-const ChatArea = ({ toggleSidebar, currentSession }) => {
+const ChatArea = ({ toggleSidebar, currentSession, theme, toggleTheme }) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
@@ -126,7 +126,7 @@ const ChatArea = ({ toggleSidebar, currentSession }) => {
 
     return (
         <main className="main-content">
-            <header className="chat-header glass">
+            <header className="chat-header">
                 <button className="menu-btn" onClick={toggleSidebar}>
                     <Menu size={24} />
                 </button>
@@ -135,14 +135,14 @@ const ChatArea = ({ toggleSidebar, currentSession }) => {
                 </div>
                 <div className="header-actions">
                     <button
-                        className={`web-search-toggle ${useRag ? 'active' : ''}`}
+                        className={`header-icon-btn ${useRag ? 'active' : ''}`}
                         onClick={() => setUseRag(!useRag)}
                         title="知识库检索"
                     >
                         <Database size={18} />
                     </button>
                     <button
-                        className={`web-search-toggle ${useWebSearch ? 'active' : ''}`}
+                        className={`header-icon-btn ${useWebSearch ? 'active' : ''}`}
                         onClick={() => setUseWebSearch(!useWebSearch)}
                         title="联网搜索"
                         style={{ marginLeft: '8px' }}
@@ -150,12 +150,12 @@ const ChatArea = ({ toggleSidebar, currentSession }) => {
                         <Globe size={18} />
                     </button>
                     <button
-                        className="clear-btn"
-                        onClick={handleClear}
-                        title="清除会话"
+                        className="header-icon-btn theme-btn"
+                        onClick={toggleTheme}
+                        title="切换主题"
                         style={{ marginLeft: '8px' }}
                     >
-                        <Trash2 size={18} />
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 </div>
             </header>

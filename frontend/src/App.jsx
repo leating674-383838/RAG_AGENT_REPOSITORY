@@ -14,7 +14,15 @@ function App() {
   console.log("App Projects State:", projects);
 
   useEffect(() => {
+    // 1. Initial theme from system preference or default 'light'
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const initialTheme = localStorage.getItem('theme') || systemTheme;
+    setTheme(initialTheme);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   useEffect(() => {
@@ -44,7 +52,7 @@ function App() {
 
   const handleNewSession = async (projectId = null) => {
     try {
-      const title = "新对话 " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const title = "新对话"; // No time in title
       const newSess = await createSession(title, projectId);
       setSessions(prev => [newSess, ...prev]);
       setCurrentSession(newSess);
@@ -59,7 +67,6 @@ function App() {
     try {
       const newProj = await createProject(name);
       if (newProj) {
-        console.log("New Project Created:", newProj);
         setProjects(prev => [newProj, ...prev]);
       }
     } catch (e) {
@@ -75,8 +82,6 @@ function App() {
       <Sidebar
         isOpen={sidebarOpen}
         closeSidebar={() => setSidebarOpen(false)}
-        toggleTheme={toggleTheme}
-        theme={theme}
         sessions={sessions}
         projects={projects}
         currentSession={currentSession}
@@ -89,6 +94,8 @@ function App() {
       <ChatArea
         toggleSidebar={toggleSidebar}
         currentSession={currentSession}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
     </div>
   );

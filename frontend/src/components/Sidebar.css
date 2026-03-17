@@ -311,12 +311,26 @@
 }
 
 .more-icon {
-    cursor: pointer;
     color: var(--text-secondary);
-    transition: color 0.2s;
 }
 
-.more-icon:hover {
+.load-more-items {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    margin-top: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    background: rgba(var(--accent-rgb), 0.05);
+}
+
+.load-more-items:hover {
+    background: rgba(var(--accent-rgb), 0.1);
     color: var(--text-primary);
 }
 
@@ -474,7 +488,6 @@
     color: var(--text-primary);
 }
 
-/* Move to Project */
 .history-item {
     position: relative;
 }
