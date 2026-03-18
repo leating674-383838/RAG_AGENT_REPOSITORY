@@ -17,10 +17,10 @@ def create_session(session: SessionCreate):
         res = storage.create_session(session.title, session.project_id)
         if res:
             return res
+        raise HTTPException(status_code=500, detail="Failed to persist session to database")
     except Exception as e:
-        print(f"Failed to create session in Supabase: {e}")
-    # Fallback
-    return {"id": str(uuid.uuid4()), "title": session.title, "project_id": session.project_id}
+        print(f"Session Creation Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions")
 def get_sessions(project_id: str | None = None):
