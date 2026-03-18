@@ -1,18 +1,18 @@
 import openai
+import os
 from core.config import settings
 from services.serper import SerperClient
 
-# Chat client (Groq)
-chat_client = openai.OpenAI(
-    api_key=settings.GROQ_API_KEY,
-    base_url=settings.GROQ_API_BASE,
-)
+# Clients are initialized lazily or with fallbacks
+def get_chat_client():
+    key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY")
+    base = settings.GROQ_API_BASE or "https://api.groq.com/openai/v1"
+    return openai.OpenAI(api_key=key, base_url=base)
 
-# Embedding client (OpenAI - keep for RAG if key exists)
-embed_client = openai.OpenAI(
-    api_key=settings.OPENAI_API_KEY,
-    base_url=settings.OPENAI_API_BASE,
-)
+def get_embed_client():
+    key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY")
+    base = settings.OPENAI_API_BASE or "https://api.openai.com/v1"
+    return openai.OpenAI(api_key=key, base_url=base)
 
 serper_client = SerperClient()
 
@@ -39,30 +39,38 @@ class AgentService:
             last_msg = messages[-1].get("content", "")
             
             try:
-                # Use OpenAI for embeddings (if available)
-                res = embed_client.embeddings.create(
-                    model="text-embedding-3-small",
-                    input=[last_msg]
-                )
-                query_vector = res.data[0].embedding
-                
-                docs = storage.search_documents("knowledge_base", query_vector, limit=5)
-                if docs:
-                    rag_parts = []
-                    for idx, d in enumerate(docs, 1):
-                        src = d.get('source', '未知来源')
-                        text = d.get('text', '')
-                        rag_parts.append(f"[来源{idx}] (文件: {src})\n{text}")
-                    rag_context = "\n\n".join(rag_parts)
-                    system_prompt += f"\n\n以下是从本地知识库检索到的相关内容，请优先引用：\n{rag_context}"
+                # Use OpenAI for embeddings
+                e_client = get_embed_client()
+                if e_client.api_key:
+                    res = e_client.embeddings.create(
+                        model="text-embedding-3-small",
+                        input=[last_msg]
+                    )
+                    query_vector = res.data[0].embedding
+                    
+                    docs = storage.search_documents("knowledge_base", query_vector, limit=5)
+                    if docs:
+                        rag_parts = []
+                        for idx, d in enumerate(docs, 1):
+                            src = d.get('source', '未知来源')
+                            text = d.get('text', '')
+                            rag_parts.append(f"[来源{idx}] (文件: {src})\n{text}")
+                        rag_context = "\n\n".join(rag_parts)
+                        system_prompt += f"\n\n以下是从本地知识库检索到的相关内容，请优先引用：\n{rag_context}"
+                else:
+                    print("Skipping RAG: No OpenAI API Key found.")
             except Exception as e:
                 print(f"Error during RAG retrieval: {e}")
             
         try:
             full_msgs = [{"role": "system", "content": system_prompt}] + messages
             
+            c_client = get_chat_client()
+            if not c_client.api_key:
+                return "抱歉，未检测到 GROQ_API_KEY，请在 Render 环境变量中配置。"
+
             # Use Groq for chat
-            response = chat_client.chat.completions.create(
+            response = c_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=full_msgs,
                 temperature=0.3,
@@ -78,15 +86,19 @@ class AgentService:
             except Exception as dns_e:
                 dns_status = f"DNS FAIL ({str(dns_e)})"
             
-            error_detail = f"Type: {type(e).__name__}, Msg: {str(e)}, DNS: {dns_status}"
+            error_detail = f"Type: {type(e).__name__}, Msg: {str(e)}, DNS: {dns_status}, URL: {settings.GROQ_API_BASE}"
             print(f"Error during Groq chat completion: {error_detail}")
-            return f"抱歉，AI 服务暂时不可用。错误详情: {error_detail}"
+            return f"控制台报错: {type(e).__name__}. 详情: {str(e)}. {dns_status}. 请检查 GROQ_API_KEY 是否正确。"
 
     @staticmethod
     def summarize_title(message: str) -> str:
         try:
+            c_client = get_chat_client()
+            if not c_client.api_key:
+                return "新对话"
+                
             prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
-            response = chat_client.chat.completions.create(
+            response = c_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
