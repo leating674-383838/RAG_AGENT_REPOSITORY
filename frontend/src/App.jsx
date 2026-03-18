@@ -7,9 +7,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [sessions, setSessions] = useState([]);
-  const [projects, setProjects] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
-  const [currentProject, setCurrentProject] = useState(null);
 
   useEffect(() => {
     // 1. Initial theme from system preference or default 'dark'
@@ -29,11 +27,7 @@ function App() {
 
   const loadInitialData = async () => {
     try {
-      // 1. Load Projects
-      const projectData = await fetchProjects();
-      setProjects(projectData || []);
-
-      // 2. Load General Sessions
+      // 1. Load Sessions
       const sessionData = await fetchSessions();
       setSessions(sessionData || []);
 
@@ -48,29 +42,16 @@ function App() {
     }
   }
 
-  const handleNewSession = async (projectId = null) => {
+  const handleNewSession = async () => {
     try {
       const title = "新对话";
-      const newSess = await createSession(title, projectId);
+      const newSess = await createSession(title);
       if (newSess) {
         setSessions(prev => [newSess, ...(prev || [])]);
         setCurrentSession(newSess);
       }
     } catch (e) {
       console.error("Could not create session", e);
-    }
-  }
-
-  const handleNewProject = async () => {
-    const name = prompt("请输入项目名称:");
-    if (!name) return;
-    try {
-      const newProj = await createProject(name);
-      if (newProj) {
-        setProjects(prev => [newProj, ...prev]);
-      }
-    } catch (e) {
-      console.error("Could not create project", e);
     }
   }
 
@@ -83,20 +64,15 @@ function App() {
         isOpen={sidebarOpen}
         closeSidebar={() => setSidebarOpen(false)}
         sessions={sessions || []}
-        projects={projects || []}
         currentSession={currentSession}
-        currentProject={currentProject}
-        onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
+        onSelectSession={(s) => { setCurrentSession(s); }}
         onNewSession={handleNewSession}
-        onNewProject={handleNewProject}
-        onSelectProject={(p) => { setCurrentProject(p); setCurrentSession(null); }}
       />
       <ChatArea
         toggleSidebar={toggleSidebar}
         currentSession={currentSession}
-        currentProject={currentProject}
         sessions={sessions || []}
-        onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
+        onSelectSession={(s) => { setCurrentSession(s); }}
         onNewSession={handleNewSession}
         onSessionUpdate={(updatedSess) => {
           if (!updatedSess) return;

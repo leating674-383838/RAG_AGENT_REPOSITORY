@@ -7,38 +7,13 @@ import './Sidebar.css';
 
 const Sidebar = ({
     isOpen, closeSidebar,
-    sessions, currentSession, onSelectSession, onNewSession,
-    projects, onNewProject, onSelectProject, currentProject
+    sessions, currentSession, onSelectSession, onNewSession
 }) => {
     const [showMore, setShowMore] = useState(false);
-    const [expandedProjects, setExpandedProjects] = useState({});
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-    const [isProjectsExpanded, setIsProjectsExpanded] = useState(true);
-
-    // Auto-expand current session's project
-    useEffect(() => {
-        if (currentSession?.project_id) {
-            setExpandedProjects(prev => ({
-                ...prev,
-                [currentSession.project_id]: true
-            }));
-        }
-    }, [currentSession]);
-
-
-    const handleMoveSession = async (sessionId, projectId) => {
-        try {
-            const client = await import('../api/client');
-            await client.moveSession(sessionId, projectId);
-            setActiveMenuId(null);
-            window.location.reload(); // Temporary measure; ideal would be state sync
-        } catch (e) {
-            alert("移动会话失败");
-        }
-    };
 
     const handleDeleteSession = async (sessionId) => {
         try {
@@ -51,22 +26,14 @@ const Sidebar = ({
         }
     };
 
-
-    const toggleProject = (projectId) => {
-        setExpandedProjects(prev => ({
-            ...prev,
-            [projectId]: !prev[projectId]
-        }));
-    };
-
     const toggleMenu = (e, id) => {
         e.stopPropagation();
         setActiveMenuId(activeMenuId === id ? null : id);
     };
 
-    // Filter sessions not in any project for "Your Chats"
-    const generalSessions = (sessions || []).filter(s => s && !s.project_id);
-    const displayedSessions = showMore ? generalSessions : generalSessions.slice(0, 5);
+    // All sessions now go to "Your Chats"
+    const allSessions = sessions || [];
+    const displayedSessions = showMore ? allSessions : allSessions.slice(0, 10);
 
     // Search results
     const searchResults = searchQuery.trim()
@@ -87,16 +54,8 @@ const Sidebar = ({
                         <Trash2 size={14} />
                         <span>删除对话</span>
                     </div>
-                    <div className="menu-divider"></div>
                 </>
             )}
-            <div className="menu-label">移动至项目:</div>
-            {(projects || []).map(p => p && (
-                <div key={p.id} className="menu-item" onClick={() => handleMoveSession(s.id, p.id)}>
-                    <ArrowRight size={14} />
-                    <span>{p.name}</span>
-                </div>
-            ))}
         </div>
     );
 
@@ -111,7 +70,7 @@ const Sidebar = ({
                 </div>
 
                 <div className="sidebar-nav">
-                    <div className="nav-item" onClick={() => { setShowSearch(false); onNewSession(null); }}>
+                    <div className="nav-item" onClick={() => { setShowSearch(false); onNewSession(); }}>
                         <Plus size={18} />
                         <span>新聊天</span>
                     </div>
@@ -158,51 +117,6 @@ const Sidebar = ({
                 <div className="section-divider"></div>
 
                 <div className="sidebar-content">
-                    {/* My Projects Section */}
-                    <div className="projects-section">
-                        <div className="projects-section-header" onClick={() => setIsProjectsExpanded(!isProjectsExpanded)} style={{ cursor: 'pointer' }}>
-                            <div className="flex items-center gap-1">
-                                {isProjectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                <span className="root-path">/root/projects/</span>
-                            </div>
-                        </div>
-                        {isProjectsExpanded && (
-                            <div className="project-list">
-                                <div className="nav-item new-project-nav" onClick={onNewProject} style={{ fontFamily: 'monospace' }}>
-                                    <FolderPlus size={18} />
-                                    <span>$ create_new_project</span>
-                                </div>
-                                {projects && projects.length > 0 ? projects.map(project => (
-                                    <div key={project.id} className="project-group">
-                                        <div
-                                            className={`project-folder ${currentProject?.id === project.id ? 'active' : ''}`}
-                                            onClick={() => onSelectProject(project)}
-                                            style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
-                                        >
-                                            <span className="project-path">~/projects/</span>
-                                            <span className="project-name">{project.name}</span>
-                                        </div>
-                                        <div className="project-relative-chats">
-                                            {(sessions || []).filter(s => s && s.project_id === project.id).map(s => (
-                                                <div
-                                                    key={s.id}
-                                                    className={`history-item relative-item ${currentSession?.id === s.id ? 'active' : ''}`}
-                                                    onClick={() => onSelectSession(s)}
-                                                >
-                                                    <div className="tree-leaf"></div>
-                                                    <FileText size={12} className="rel-icon" />
-                                                    <span className="history-item-title">{s.title || 'untitled'}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )) : (
-                                    <p className="empty-hint">暂无项目</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
                     <div className="chats-section">
                         <div className="chats-section-header">
                             <span>你的聊天</span>
@@ -226,7 +140,7 @@ const Sidebar = ({
                                     </div>
                                 </div>
                             ))}
-                            {generalSessions.length > 5 && (
+                            {allSessions.length > 10 && (
                                 <div className="load-more-items" onClick={() => setShowMore(!showMore)}>
                                     <MoreHorizontal size={16} className="more-icon" />
                                     <span>{showMore ? '收起' : '展示更多'}</span>
