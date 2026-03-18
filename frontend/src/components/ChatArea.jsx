@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw, Plus, Folder } from 'lucide-react';
 import { fetchMessages, sendChat, clearMessages, submitFeedback, uploadFile, fetchSessions } from '../api/client';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './ChatArea.css';
 
 const SUGGESTIONS = [
@@ -265,7 +268,30 @@ const ChatArea = ({
                         <div key={idx} className={`message-wrapper ${msg.role}`}>
                             <div className="message animate-fade-in">
                                 <div className="message-content">
-                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={{
+                                            code({ node, inline, className, children, ...props }) {
+                                                const match = /language-(\w+)/.exec(className || '');
+                                                return !inline && match ? (
+                                                    <SyntaxHighlighter
+                                                        style={theme === 'dark' ? oneDark : oneLight}
+                                                        language={match[1]}
+                                                        PreTag="div"
+                                                        {...props}
+                                                    >
+                                                        {String(children).replace(/\n$/, '')}
+                                                    </SyntaxHighlighter>
+                                                ) : (
+                                                    <code className={className} {...props}>
+                                                        {children}
+                                                    </code>
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        {msg.content}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
                             <div className="message-meta">
