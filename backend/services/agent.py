@@ -2,10 +2,10 @@ import openai
 from core.config import settings
 from services.serper import SerperClient
 
-# Initialize Kimi client
+# Initialize OpenAI client
 client = openai.OpenAI(
-    api_key=settings.KIMI_API_KEY,
-    base_url="https://api.moonshot.cn/v1",
+    api_key=settings.OPENAI_API_KEY,
+    base_url=settings.OPENAI_API_BASE,
 )
 serper_client = SerperClient()
 
@@ -32,8 +32,9 @@ class AgentService:
             last_msg = messages[-1].get("content", "")
             
             try:
+                # Use OpenAI embedding model
                 res = client.embeddings.create(
-                    model="embedding-2",
+                    model="text-embedding-3-small",
                     input=[last_msg]
                 )
                 query_vector = res.data[0].embedding
@@ -53,17 +54,17 @@ class AgentService:
         try:
             full_msgs = [{"role": "system", "content": system_prompt}] + messages
             
-            # Add timeout to prevent hanging
+            # Use OpenAI model
             response = client.chat.completions.create(
-                model="moonshot-v1-8k",
+                model="gpt-3.5-turbo",
                 messages=full_msgs,
                 temperature=0.3,
-                timeout=30.0  # 30 seconds timeout
+                timeout=30.0
             )
             return response.choices[0].message.content
         except Exception as e:
             import socket
-            hostname = "api.moonshot.cn"
+            hostname = "api.openai.com"
             try:
                 ip = socket.gethostbyname(hostname)
                 dns_status = f"DNS OK ({ip})"
@@ -71,7 +72,7 @@ class AgentService:
                 dns_status = f"DNS FAIL ({str(dns_e)})"
             
             error_detail = f"Type: {type(e).__name__}, Msg: {str(e)}, DNS: {dns_status}"
-            print(f"Error during Moonshot chat completion: {error_detail}")
+            print(f"Error during OpenAI chat completion: {error_detail}")
             return f"抱歉，AI 服务暂时不可用。错误详情: {error_detail}"
 
     @staticmethod
@@ -79,7 +80,7 @@ class AgentService:
         try:
             prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
             response = client.chat.completions.create(
-                model="moonshot-v1-8k",
+                model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
             )
