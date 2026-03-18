@@ -14,14 +14,21 @@ class StorageService:
                 
         # Initialize Qdrant
         self.qdrant: QdrantClient | None = None
-        if settings.QDRANT_URL and settings.QDRANT_API_KEY:
+        if settings.QDRANT_URL:
             try:
+                print(f"Initializing Qdrant at: {settings.QDRANT_URL}")
+                key_exists = bool(settings.QDRANT_API_KEY)
+                print(f"Qdrant API Key present: {key_exists}")
+                
                 self.qdrant = QdrantClient(
                     url=settings.QDRANT_URL, 
-                    api_key=settings.QDRANT_API_KEY
+                    api_key=settings.QDRANT_API_KEY or None
                 )
+                print("Qdrant client initialized successfully.")
             except Exception as e:
-                print(f"Error initializing Qdrant: {e}")
+                print(f"Error initializing Qdrant: {str(e)}")
+        else:
+            print("QDRANT_URL not set, skipping Qdrant initialization.")
 
     def create_session(self, title: str, project_id: str | None = None):
         if not self.supabase:
