@@ -53,15 +53,26 @@ class AgentService:
         try:
             full_msgs = [{"role": "system", "content": system_prompt}] + messages
             
+            # Add timeout to prevent hanging
             response = client.chat.completions.create(
                 model="moonshot-v1-8k",
                 messages=full_msgs,
                 temperature=0.3,
+                timeout=30.0  # 30 seconds timeout
             )
             return response.choices[0].message.content
         except Exception as e:
-            print(f"Error during Moonshot chat completion: {e}")
-            return f"抱歉，AI 服务暂时不可用。错误详情: {str(e)}"
+            import socket
+            hostname = "api.moonshot.cn"
+            try:
+                ip = socket.gethostbyname(hostname)
+                dns_status = f"DNS OK ({ip})"
+            except Exception as dns_e:
+                dns_status = f"DNS FAIL ({str(dns_e)})"
+            
+            error_detail = f"Type: {type(e).__name__}, Msg: {str(e)}, DNS: {dns_status}"
+            print(f"Error during Moonshot chat completion: {error_detail}")
+            return f"抱歉，AI 服务暂时不可用。错误详情: {error_detail}"
 
     @staticmethod
     def summarize_title(message: str) -> str:
