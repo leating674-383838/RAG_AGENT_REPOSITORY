@@ -65,12 +65,12 @@ const Sidebar = ({
     };
 
     // Filter sessions not in any project for "Your Chats"
-    const generalSessions = sessions.filter(s => !s.project_id);
+    const generalSessions = (sessions || []).filter(s => s && !s.project_id);
     const displayedSessions = showMore ? generalSessions : generalSessions.slice(0, 5);
 
     // Search results
     const searchResults = searchQuery.trim()
-        ? sessions.filter(s => (s.title || '').toLowerCase().includes(searchQuery.toLowerCase()))
+        ? (sessions || []).filter(s => s && (s.title || '').toLowerCase().includes(searchQuery.toLowerCase()))
         : [];
 
 
@@ -81,7 +81,7 @@ const Sidebar = ({
 
     const renderChatMenu = (s) => (
         <div className="session-options-menu glass" onClick={e => e.stopPropagation()}>
-            {sessions.length > 1 && (
+            {(sessions || []).length > 1 && (
                 <>
                     <div className="menu-item delete" onClick={() => { setDeleteConfirmId(s.id); setActiveMenuId(null); }}>
                         <Trash2 size={14} />
@@ -91,7 +91,7 @@ const Sidebar = ({
                 </>
             )}
             <div className="menu-label">移动至项目:</div>
-            {projects.map(p => (
+            {(projects || []).map(p => p && (
                 <div key={p.id} className="menu-item" onClick={() => handleMoveSession(s.id, p.id)}>
                     <ArrowRight size={14} />
                     <span>{p.name}</span>
@@ -183,7 +183,7 @@ const Sidebar = ({
                                             <span className="project-name">{project.name}</span>
                                         </div>
                                         <div className="project-relative-chats">
-                                            {sessions.filter(s => s.project_id === project.id).map(s => (
+                                            {(sessions || []).filter(s => s && s.project_id === project.id).map(s => (
                                                 <div
                                                     key={s.id}
                                                     className={`history-item relative-item ${currentSession?.id === s.id ? 'active' : ''}`}

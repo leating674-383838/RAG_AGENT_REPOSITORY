@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw } from 'lucide-react';
+import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw, Plus, Folder } from 'lucide-react';
 import { fetchMessages, sendChat, clearMessages, submitFeedback, uploadFile, fetchSessions } from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import './ChatArea.css';
@@ -56,11 +56,11 @@ const ChatArea = ({
                 setMessages([]);
                 setIsNewChat(true);
             } else {
-                const formatted = history.map(h => ({
+                const formatted = (history || []).map(h => h && ({
                     role: h.role === 'user' ? 'user' : 'ai',
                     content: h.content,
                     timestamp: h.created_at || new Date().toISOString()
-                }));
+                })).filter(Boolean);
                 setMessages(formatted);
                 setIsNewChat(false);
             }
@@ -229,8 +229,8 @@ const ChatArea = ({
                     </div>
 
                     <div className="project-session-list">
-                        {(sessions || []).filter(s => s.project_id === currentProject.id).length > 0 ? (
-                            (sessions || []).filter(s => s.project_id === currentProject.id).map(s => (
+                        {(sessions || []).filter(s => s && s.project_id === currentProject.id).length > 0 ? (
+                            (sessions || []).filter(s => s && s.project_id === currentProject.id).map(s => (
                                 <div key={s.id} className="project-session-item glass" onClick={() => onSelectSession(s)}>
                                     <div className="ps-title">{s.title || '无标题'}</div>
                                     <div className="ps-date">

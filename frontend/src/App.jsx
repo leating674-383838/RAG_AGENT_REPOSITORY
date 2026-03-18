@@ -11,10 +11,8 @@ function App() {
   const [currentSession, setCurrentSession] = useState(null);
   const [currentProject, setCurrentProject] = useState(null);
 
-
-
   useEffect(() => {
-    // 1. Initial theme from system preference or default 'light'
+    // 1. Initial theme from system preference or default 'dark'
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = localStorage.getItem('theme') || systemTheme;
     setTheme(initialTheme);
@@ -52,10 +50,12 @@ function App() {
 
   const handleNewSession = async (projectId = null) => {
     try {
-      const title = "新对话"; // No time in title
+      const title = "新对话";
       const newSess = await createSession(title, projectId);
-      setSessions(prev => [newSess, ...prev]);
-      setCurrentSession(newSess);
+      if (newSess) {
+        setSessions(prev => [newSess, ...(prev || [])]);
+        setCurrentSession(newSess);
+      }
     } catch (e) {
       console.error("Could not create session", e);
     }
@@ -82,8 +82,8 @@ function App() {
       <Sidebar
         isOpen={sidebarOpen}
         closeSidebar={() => setSidebarOpen(false)}
-        sessions={sessions}
-        projects={projects}
+        sessions={sessions || []}
+        projects={projects || []}
         currentSession={currentSession}
         currentProject={currentProject}
         onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
@@ -95,11 +95,12 @@ function App() {
         toggleSidebar={toggleSidebar}
         currentSession={currentSession}
         currentProject={currentProject}
-        sessions={sessions}
+        sessions={sessions || []}
         onSelectSession={(s) => { setCurrentSession(s); setCurrentProject(null); }}
         onNewSession={handleNewSession}
         onSessionUpdate={(updatedSess) => {
-          setSessions(prev => prev.map(s => s.id === updatedSess.id ? updatedSess : s));
+          if (!updatedSess) return;
+          setSessions(prev => (prev || []).map(s => (s && s.id === updatedSess.id) ? updatedSess : s));
           if (currentSession?.id === updatedSess.id) {
             setCurrentSession(updatedSess);
           }
