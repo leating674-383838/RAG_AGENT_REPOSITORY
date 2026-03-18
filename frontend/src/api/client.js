@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use the environment variable for production URL, fallback to local URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8005/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://rag-agent-repository-1.onrender.com/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
