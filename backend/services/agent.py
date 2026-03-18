@@ -71,7 +71,7 @@ class AgentService:
 
             # Use Groq for chat
             response = c_client.chat.completions.create(
-                model="llama3-8b-8192",
+                model="llama-3.1-8b-instant",
                 messages=full_msgs,
                 temperature=0.3,
                 timeout=30.0
@@ -99,7 +99,7 @@ class AgentService:
                 
             prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
             response = c_client.chat.completions.create(
-                model="llama3-8b-8192",
+                model="llama-3.1-8b-instant",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
             )
