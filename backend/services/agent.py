@@ -2,11 +2,18 @@ import openai
 from core.config import settings
 from services.serper import SerperClient
 
-# Initialize OpenAI client
-client = openai.OpenAI(
+# Chat client (Groq)
+chat_client = openai.OpenAI(
+    api_key=settings.GROQ_API_KEY,
+    base_url=settings.GROQ_API_BASE,
+)
+
+# Embedding client (OpenAI - keep for RAG if key exists)
+embed_client = openai.OpenAI(
     api_key=settings.OPENAI_API_KEY,
     base_url=settings.OPENAI_API_BASE,
 )
+
 serper_client = SerperClient()
 
 class AgentService:
@@ -32,8 +39,8 @@ class AgentService:
             last_msg = messages[-1].get("content", "")
             
             try:
-                # Use OpenAI embedding model
-                res = client.embeddings.create(
+                # Use OpenAI for embeddings (if available)
+                res = embed_client.embeddings.create(
                     model="text-embedding-3-small",
                     input=[last_msg]
                 )
@@ -54,9 +61,9 @@ class AgentService:
         try:
             full_msgs = [{"role": "system", "content": system_prompt}] + messages
             
-            # Use OpenAI model
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            # Use Groq for chat
+            response = chat_client.chat.completions.create(
+                model="llama3-8b-8192",
                 messages=full_msgs,
                 temperature=0.3,
                 timeout=30.0
@@ -64,7 +71,7 @@ class AgentService:
             return response.choices[0].message.content
         except Exception as e:
             import socket
-            hostname = "api.openai.com"
+            hostname = "api.groq.com"
             try:
                 ip = socket.gethostbyname(hostname)
                 dns_status = f"DNS OK ({ip})"
@@ -72,15 +79,15 @@ class AgentService:
                 dns_status = f"DNS FAIL ({str(dns_e)})"
             
             error_detail = f"Type: {type(e).__name__}, Msg: {str(e)}, DNS: {dns_status}"
-            print(f"Error during OpenAI chat completion: {error_detail}")
+            print(f"Error during Groq chat completion: {error_detail}")
             return f"抱歉，AI 服务暂时不可用。错误详情: {error_detail}"
 
     @staticmethod
     def summarize_title(message: str) -> str:
         try:
             prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            response = chat_client.chat.completions.create(
+                model="llama3-8b-8192",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.5,
             )
