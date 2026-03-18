@@ -99,7 +99,10 @@ def chat(request: ChatRequest):
         
         return {"reply": ai_response, "elapsed_ms": elapsed_ms}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_msg = f"Chat Error: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):

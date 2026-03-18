@@ -50,21 +50,29 @@ class AgentService:
             except Exception as e:
                 print(f"Error during RAG retrieval: {e}")
             
-        full_msgs = [{"role": "system", "content": system_prompt}] + messages
-        
-        response = client.chat.completions.create(
-            model="moonshot-v1-8k",
-            messages=full_msgs,
-            temperature=0.3,
-        )
-        return response.choices[0].message.content
+        try:
+            full_msgs = [{"role": "system", "content": system_prompt}] + messages
+            
+            response = client.chat.completions.create(
+                model="moonshot-v1-8k",
+                messages=full_msgs,
+                temperature=0.3,
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Error during Moonshot chat completion: {e}")
+            return f"抱歉，AI 服务暂时不可用。错误详情: {str(e)}"
 
     @staticmethod
     def summarize_title(message: str) -> str:
-        prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
-        response = client.chat.completions.create(
-            model="moonshot-v1-8k",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5,
-        )
-        return response.choices[0].message.content.strip('"').strip()
+        try:
+            prompt = f"Please provide a very short, concise title (max 4-5 words) summarizing this message: {message}"
+            response = client.chat.completions.create(
+                model="moonshot-v1-8k",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.5,
+            )
+            return response.choices[0].message.content.strip('"').strip()
+        except Exception as e:
+            print(f"Error during title summarization: {e}")
+            return "新对话"
