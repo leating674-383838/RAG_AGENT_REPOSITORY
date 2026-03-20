@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus, MessageSquare, Moon, Sun, X,
-    FileSpreadsheet, Search, Folder, FolderPlus, MoreHorizontal, ChevronRight, ChevronDown, Trash2, ArrowRight, FileText
+    Search, MoreHorizontal, Trash2
 } from 'lucide-react';
 import './Sidebar.css';
 
