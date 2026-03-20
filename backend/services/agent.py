@@ -1,5 +1,6 @@
 import openai
 import os
+from datetime import datetime, timedelta, timezone
 from core.config import settings
 from services.serper import SerperClient
 
@@ -19,7 +20,12 @@ serper_client = SerperClient()
 class AgentService:
     @staticmethod
     def chat(messages, use_search=False, use_rag=False):
+        # 0. Inject Current Beijing Time (UTC+8)
+        beijing_now = datetime.now(timezone(timedelta(hours=8)))
+        time_str = beijing_now.strftime("现在是%Y年%m月%d日 %H:%M（北京时间）")
+
         system_prompt = (
+            f"{time_str}\n"
             "你是一个高度智能的问答助手。"
             "回答问题时请遵循以下规则：\n"
             "1. 如果提供了知识库上下文，优先使用知识库内容回答，并在回答中使用 [来源X] 标注引用。\n"
