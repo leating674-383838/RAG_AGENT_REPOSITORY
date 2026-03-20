@@ -22,7 +22,7 @@ class AgentService:
     def chat(messages, use_search=False, use_rag=False):
         # 0. Inject Current Beijing Time (UTC+8)
         beijing_now = datetime.now(timezone(timedelta(hours=8)))
-        time_str = beijing_now.strftime("现在是%Y年%m月%d日 %H:%M（北京时间）")
+        time_str = beijing_now.strftime("今天是%Y年%m月%d日，当前时间是%H:%M")
 
         system_prompt = (
             f"{time_str}\n"
