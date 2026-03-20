@@ -86,14 +86,13 @@ class StorageService:
         self.supabase.table("messages").delete().eq("session_id", session_id).execute()
         return True
 
-    def save_feedback(self, session_id: str, message_content: str, rating: str, comment: str | None = None):
+    def save_feedback(self, session_id: str, message_id: str, rating: int):
         if not self.supabase:
             return None
         data = self.supabase.table("feedback").insert({
             "session_id": session_id,
-            "message_content": message_content,
-            "rating": rating,
-            "comment": comment
+            "message_id": message_id,
+            "rating": rating
         }).execute()
         return data.data[0] if data.data else None
 

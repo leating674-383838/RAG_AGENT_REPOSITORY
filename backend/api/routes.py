@@ -89,7 +89,8 @@ def chat(request: ChatRequest):
         elapsed_ms = int((time.time() - start_time) * 1000)
         
         # 4. Save AI response
-        storage.add_message(request.session_id, "assistant", ai_response)
+        ai_msg_res = storage.add_message(request.session_id, "assistant", ai_response)
+        ai_message_id = ai_msg_res.get("id") if ai_msg_res else None
         
         # 5. Auto-rename session if it's the first message
         if len(history) == 1:
@@ -97,7 +98,7 @@ def chat(request: ChatRequest):
             if storage.supabase:
                  storage.supabase.table("sessions").update({"title": title}).eq("id", request.session_id).execute()
         
-        return {"reply": ai_response, "elapsed_ms": elapsed_ms}
+        return {"reply": ai_response, "elapsed_ms": elapsed_ms, "message_id": ai_message_id}
     except Exception as e:
         import traceback
         error_msg = f"Chat Error: {str(e)}\n{traceback.format_exc()}"
@@ -118,7 +119,7 @@ def clear_messages(session_id: str):
 
 @router.post("/feedback")
 async def post_feedback(request: FeedbackRequest):
-    await storage.save_feedback(request.session_id, request.message_content, request.rating, request.comment)
+    storage.save_feedback(request.session_id, request.message_id or "", request.rating)
     return {"status": "ok"}
 
 @router.delete("/sessions/{session_id}")

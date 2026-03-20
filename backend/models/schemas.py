@@ -24,6 +24,5 @@ class SessionCreate(BaseModel):
 
 class FeedbackRequest(BaseModel):
     session_id: str
-    message_content: str
-    rating: str  # 'useful' or 'not_useful'
-    comment: Optional[str] = None
+    message_id: Optional[str] = None
+    rating: int  # 1 for up, -1 for down

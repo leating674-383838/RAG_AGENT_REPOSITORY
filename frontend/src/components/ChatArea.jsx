@@ -55,6 +55,7 @@ const ChatArea = ({
                 setIsNewChat(true);
             } else {
                 const formatted = (history || []).map(h => h && ({
+                    id: h.id,
                     role: h.role === 'user' ? 'user' : 'ai',
                     content: h.content,
                     timestamp: h.created_at || new Date().toISOString()
@@ -83,6 +84,7 @@ const ChatArea = ({
         try {
             const data = await sendChat(currentSession.id, msgText, useWebSearch, useRag);
             setMessages(prev => [...prev, {
+                id: data.message_id,
                 role: 'ai',
                 content: data.reply,
                 timestamp: new Date().toISOString(),
@@ -120,12 +122,15 @@ const ChatArea = ({
         }
     };
 
-    const handleFeedback = async (msgIdx, rating) => {
+    const handleFeedback = async (msgIdx, type) => {
         if (!currentSession?.id) return;
         const msg = messages[msgIdx];
+        if (!msg.id) return;
+
+        const ratingValue = type === 'useful' ? 1 : -1;
         try {
-            await submitFeedback(currentSession.id, msg.content, rating);
-            setFeedbackGiven(prev => ({ ...prev, [msgIdx]: rating }));
+            await submitFeedback(currentSession.id, msg.id, ratingValue);
+            setFeedbackGiven(prev => ({ ...prev, [msgIdx]: type }));
         } catch (e) {
             console.error('Feedback failed', e);
         }
