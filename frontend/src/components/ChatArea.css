@@ -386,51 +386,6 @@
     margin: 0;
 }
 
-.suggestions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 24px;
-    width: 100%;
-    max-width: 420px;
-}
-
-.suggestion-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    transition: all 0.2s;
-    text-align: left;
-}
-
-.suggestion-card:hover {
-    border-color: var(--accent-color);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.suggestion-icon {
-    flex-shrink: 0;
-}
-
-.suggestion-icon.sparkle {
-    color: #22c55e;
-}
-
-.suggestion-icon.chat-icon {
-    color: #3b82f6;
-}
-
-.suggestion-icon.zap {
-    color: #eab308;
-}
 
 .input-disclaimer {
     text-align: center;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Sparkles, MessageCircle, Zap, Copy, Check, Moon, Sun, RefreshCcw, Plus, Folder } from 'lucide-react';
+import { Menu, Send, Globe, Loader2, Database, Trash2, ThumbsUp, ThumbsDown, Clock, Bot, Copy, Check, Moon, Sun, RefreshCcw, Plus, Folder } from 'lucide-react';
 import { fetchMessages, sendChat, clearMessages, submitFeedback, uploadFile, fetchSessions } from '../api/client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,11 +7,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './ChatArea.css';
 
-const SUGGESTIONS = [
-    { icon: <Sparkles size={18} className="suggestion-icon sparkle" />, text: '解释一下量子计算的基本原理' },
-    { icon: <MessageCircle size={18} className="suggestion-icon chat-icon" />, text: '帮我写一段 Python 快速排序' },
-    { icon: <Zap size={18} className="suggestion-icon zap" />, text: 'React 和 Vue 的主要区别是什么' },
-];
 
 const ChatArea = ({
     toggleSidebar,
@@ -220,14 +215,6 @@ const ChatArea = ({
                     </div>
                     <h2 className="welcome-title">智能问答助手</h2>
                     <p className="welcome-subtitle">随时提问，AI 为你解答。支持多轮对话，历史记录自动保存。</p>
-                    <div className="suggestions">
-                        {SUGGESTIONS.map((s, i) => (
-                            <button key={i} className="suggestion-card glass" onClick={() => handleSend(null, s.text)}>
-                                {s.icon}
-                                <span>{s.text}</span>
-                            </button>
-                        ))}
-                    </div>
                 </div>
             ) : (
                 <div className="messages-container">
