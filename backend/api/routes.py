@@ -14,7 +14,7 @@ def health_check():
 @router.post("/sessions")
 def create_session(session: SessionCreate):
     try:
-        res = storage.create_session(session.title, session.project_id)
+        res = storage.create_session(session.title, session.project_id, session.device_id)
         if res:
             return res
         raise HTTPException(status_code=500, detail="Failed to persist session to database")
@@ -23,9 +23,9 @@ def create_session(session: SessionCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions")
-def get_sessions(project_id: str | None = None):
+def get_sessions(project_id: str | None = None, device_id: str | None = None):
     try:
-        res = storage.get_sessions(project_id)
+        res = storage.get_sessions(project_id, device_id)
         return res
     except Exception as e:
         print(f"Failed to get sessions from Supabase: {e}")

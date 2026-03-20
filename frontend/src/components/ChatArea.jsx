@@ -16,7 +16,8 @@ const ChatArea = ({
     onNewSession,
     onSessionUpdate,
     theme,
-    toggleTheme
+    toggleTheme,
+    deviceId
 }) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState([]);
@@ -90,7 +91,7 @@ const ChatArea = ({
 
             // If it's the first message, the session might have been renamed
             if (isFirstMessageInSession && onSessionUpdate) {
-                const refreshedSessions = await fetchSessions();
+                const refreshedSessions = await fetchSessions(null, deviceId);
                 const updated = refreshedSessions.find(s => s.id === currentSession.id);
                 if (updated) onSessionUpdate(updated);
             }

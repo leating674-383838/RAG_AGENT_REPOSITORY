@@ -8,12 +8,21 @@ function App() {
   const [theme, setTheme] = useState('dark');
   const [sessions, setSessions] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
+  const [deviceId, setDeviceId] = useState(null);
 
   useEffect(() => {
     // 1. Initial theme from system preference or default 'dark'
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = localStorage.getItem('theme') || systemTheme;
     setTheme(initialTheme);
+
+    // 2. Handle Device ID for session isolation
+    let id = localStorage.getItem('device_id');
+    if (!id) {
+      id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('device_id', id);
+    }
+    setDeviceId(id);
   }, []);
 
   useEffect(() => {
@@ -22,30 +31,35 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    loadInitialData();
-  }, []);
+    if (deviceId) {
+      loadInitialData(deviceId);
+    }
+  }, [deviceId]);
 
-  const loadInitialData = async () => {
+  const loadInitialData = async (did) => {
     try {
-      // 1. Load Sessions
-      const sessionData = await fetchSessions();
+      // 1. Load Sessions with device filter
+      const sessionData = await fetchSessions(null, did);
       setSessions(sessionData || []);
 
       if (sessionData && sessionData.length > 0) {
         setCurrentSession(sessionData[0]);
       } else {
-        handleNewSession(null); // Create initial general chat
+        handleNewSession(did); // Create initial general chat
       }
     } catch (e) {
       console.error("Could not load initial data", e);
-      handleNewSession(null);
+      handleNewSession(did);
     }
   }
 
-  const handleNewSession = async () => {
+  const handleNewSession = async (overrideDeviceId = null) => {
     try {
+      const activeDeviceId = overrideDeviceId || deviceId;
+      if (!activeDeviceId) return;
+
       const title = "新对话";
-      const newSess = await createSession(title);
+      const newSess = await createSession(title, null, activeDeviceId);
       if (newSess) {
         setSessions(prev => [newSess, ...(prev || [])]);
         setCurrentSession(newSess);
@@ -83,6 +97,7 @@ function App() {
         }}
         theme={theme}
         toggleTheme={toggleTheme}
+        deviceId={deviceId}
       />
     </div>
   );

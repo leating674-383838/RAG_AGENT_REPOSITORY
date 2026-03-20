@@ -20,6 +20,7 @@ class Project(BaseModel):
 class SessionCreate(BaseModel):
     title: str
     project_id: Optional[str] = None
+    device_id: Optional[str] = None
 
 class FeedbackRequest(BaseModel):
     session_id: str

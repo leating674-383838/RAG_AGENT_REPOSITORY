@@ -7,11 +7,11 @@ const api = axios.create({
     baseURL: API_BASE_URL,
 });
 
-export const fetchSessions = (projectId = null) =>
-    api.get('/sessions', { params: { project_id: projectId } }).then(res => res.data);
+export const fetchSessions = (projectId = null, deviceId = null) =>
+    api.get('/sessions', { params: { project_id: projectId, device_id: deviceId } }).then(res => res.data);
 
-export const createSession = (title, projectId = null) =>
-    api.post('/sessions', { title, project_id: projectId }).then(res => res.data);
+export const createSession = (title, projectId = null, deviceId = null) =>
+    api.post('/sessions', { title, project_id: projectId, device_id: deviceId }).then(res => res.data);
 
 export const fetchMessages = (sessionId) => api.get(`/sessions/${sessionId}/messages`).then(res => res.data);
 

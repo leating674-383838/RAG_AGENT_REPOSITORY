@@ -30,16 +30,18 @@ class StorageService:
         else:
             print("QDRANT_URL not set, skipping Qdrant initialization.")
 
-    def create_session(self, title: str, project_id: str | None = None):
+    def create_session(self, title: str, project_id: str | None = None, device_id: str | None = None):
         if not self.supabase:
             return None
         payload = {"title": title}
         if project_id:
             payload["project_id"] = project_id
+        if device_id:
+            payload["device_id"] = device_id
         data = self.supabase.table("sessions").insert(payload).execute()
         return data.data[0] if data.data else None
 
-    def get_sessions(self, project_id: str | None = None):
+    def get_sessions(self, project_id: str | None = None, device_id: str | None = None):
         if not self.supabase:
             return []
         query = self.supabase.table("sessions").select("*")
@@ -47,6 +49,10 @@ class StorageService:
             query = query.eq("project_id", project_id)
         else:
             query = query.is_("project_id", "null")
+            
+        if device_id:
+            query = query.eq("device_id", device_id)
+            
         data = query.order("created_at", desc=True).execute()
         return data.data
 
